@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ReEngage.Middleware;
 
 namespace ReEngage
 {
@@ -37,14 +38,35 @@ namespace ReEngage
             app.UseRouting();
 
             var s = 2;
-             
+
+
+            app.Use(async (_context, _next) =>
+            {
+                //await _context.Response.WriteAsync($"Hello! {s} \n");
+                await _next();
+                s--;
+                await _context.Response.WriteAsync($"\nPost! {s} \n");
+            });
+
+            app.Map("/index", (_builder) =>
+            {
+                _builder.UseTokenMidTest("1");
+
+                _builder.Run(async (context) =>
+                {
+                    await context.Response.WriteAsync($"Index s:{s}");
+                    s--;
+                });
+            });
+
+            
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    s++;
-                    await context.Response.WriteAsync($"AppName: {_hEnv.ApplicationName} \n s: {s}");
+                    s+=2;
+                    await context.Response.WriteAsync($"AppName: {_hEnv.ApplicationName} \ns: {s}");
                 });
             });
 
