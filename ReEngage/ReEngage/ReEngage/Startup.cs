@@ -1,19 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using ReEngage.Middleware;
+using ReEngage.Services;
 
 namespace ReEngage
 {
     public class Startup
     {
         IWebHostEnvironment _hEnv;
+        List<ServiceDescriptor> _descriptions;
 
         public Startup(IWebHostEnvironment hEnv)
         {
@@ -24,50 +29,47 @@ namespace ReEngage
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            _descriptions = services.ToList();
+            services.AddTransient<IServiceViewer, ServiceViewer>((s) =>
+            {
+                return new ServiceViewer(services);
+            });
+            services.AddTransient<ITransendService, CounertService>();
+            services.AddScoped<IScopedService, CounertService>();
+            services.AddSingleton<ISingletonService, CounertService>();
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceViewer serviceViewer)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
+            app.UseStatusCodePages();
 
-            var s = 2;
+            app.UseMiddleware<SingeltonMiddleware>();
+            app.UseMiddleware<ScopedMiddleware>();
+            app.UseMiddleware<TransendMiddleware>();
+            app.UseMiddleware<TransendMiddleware>();
+            app.UseMiddleware<TransendMiddleware>();
+            app.UseMiddleware<ScopedMiddleware>();
 
+            app.UseMiddleware<SingeltonMiddleware>();
+            app.UseMiddleware<SingeltonMiddleware>();
+            app.UseMiddleware<ScopedMiddleware>();
+            app.UseMiddleware<TransendMiddleware>();
 
-            app.Use(async (_context, _next) =>
+            app.Map("/services", ap => ap.Run(async context =>
             {
-                //await _context.Response.WriteAsync($"Hello! {s} \n");
-                await _next();
-                s--;
-                await _context.Response.WriteAsync($"\nPost! {s} \n");
-            });
+                await context.Response.WriteAsync(serviceViewer.GetServiceInfo());
+            }));
 
-            app.Map("/index", (_builder) =>
+            app.Run(async (context) =>
             {
-                _builder.UseTokenMidTest("1");
-
-                _builder.Run(async (context) =>
-                {
-                    await context.Response.WriteAsync($"Index s:{s}");
-                    s--;
-                });
-            });
-
-            
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGet("/", async context =>
-                {
-                    s+=2;
-                    await context.Response.WriteAsync($"AppName: {_hEnv.ApplicationName} \ns: {s}");
-                });
+                await context.Response.WriteAsync($"AppName: {_hEnv.ApplicationName}");
             });
 
         }
