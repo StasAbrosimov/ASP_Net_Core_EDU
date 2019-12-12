@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -17,61 +19,83 @@ namespace ReEngage
 {
     public class Startup
     {
-        IWebHostEnvironment _hEnv;
-        List<ServiceDescriptor> _descriptions;
-
-        public Startup(IWebHostEnvironment hEnv)
-        {
-            _hEnv = hEnv;
-        }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            _descriptions = services.ToList();
-            services.AddTransient<IServiceViewer, ServiceViewer>((s) =>
-            {
-                return new ServiceViewer(services);
-            });
-            services.AddTransient<ITransendService, CounertService>();
-            services.AddScoped<IScopedService, CounertService>();
-            services.AddSingleton<ISingletonService, CounertService>();
-
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceViewer serviceViewer)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStatusCodePages();
+            app.UseRouting();
 
-            app.UseMiddleware<SingeltonMiddleware>();
-            app.UseMiddleware<ScopedMiddleware>();
-            app.UseMiddleware<TransendMiddleware>();
-            app.UseMiddleware<TransendMiddleware>();
-            app.UseMiddleware<TransendMiddleware>();
-            app.UseMiddleware<ScopedMiddleware>();
-
-            app.UseMiddleware<SingeltonMiddleware>();
-            app.UseMiddleware<SingeltonMiddleware>();
-            app.UseMiddleware<ScopedMiddleware>();
-            app.UseMiddleware<TransendMiddleware>();
-
-            app.Map("/services", ap => ap.Run(async context =>
+            app.Use(async (context, next) =>
             {
-                await context.Response.WriteAsync(serviceViewer.GetServiceInfo());
-            }));
+                // получаем конечную точку
+                Endpoint endpoint = context.GetEndpoint();
+
+                if (endpoint != null)
+                {
+                    // получаем шаблон маршрута, который ассоциирован с конечной точкой
+                    var routePattern = (endpoint as Microsoft.AspNetCore.Routing.RouteEndpoint)?.RoutePattern?.RawText;
+
+                    Debug.WriteLine($"Endpoint Name: {endpoint.DisplayName}");
+                    Debug.WriteLine($"Route Pattern: {routePattern}");
+
+                    // если конечна€ точка определена, передаем обработку дальше
+                    await next();
+                }
+                else
+                {
+                    Debug.WriteLine("Endpoint: null");
+                    // если конечна€ точка не определена, завершаем обработку
+                    
+                    await next();
+
+                }
+            });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/index", async context =>
+                {
+                    await context.Response.WriteAsync("Hello Index!");
+                });
+                endpoints.MapGet("/", async context =>
+                {
+                    await context.Response.WriteAsync("Hello World!");
+                });
+            });
+
+
+            // определ€ем обработчик маршрута
+            var myRouteHandler = new RouteHandler(Handle);
+            // создаем маршрут, использу€ обработчик
+            var routeBuilder = new RouteBuilder(app, myRouteHandler);
+            // само определение маршрута - он должен соответствовать запросу {controller}/{action}
+            routeBuilder.MapRoute("default", "{controller}/{action}");
+
+            routeBuilder.MapRoute("{controller}/{action}/{id}",
+                async context => {
+                    context.Response.ContentType = "text/html; charset=utf-8";
+                    await context.Response.WriteAsync("трехсегментный запрос");
+                });
+            // строим маршрут
+            
+            app.UseRouter(routeBuilder.Build());
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync($"AppName: {_hEnv.ApplicationName}");
+                await context.Response.WriteAsync("RUN Hello World!");
             });
+        }
 
+        // собственно обработчик маршрута
+        private async Task Handle(HttpContext context)
+        {
+            await context.Response.WriteAsync("Hello ASP.NET Core!");
         }
     }
 }
