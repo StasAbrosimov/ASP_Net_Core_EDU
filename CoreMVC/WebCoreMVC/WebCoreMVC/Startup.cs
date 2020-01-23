@@ -55,7 +55,7 @@ namespace WebCoreMVC
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Entity}/{action=Index}/{id?}");
             });
         }
     }

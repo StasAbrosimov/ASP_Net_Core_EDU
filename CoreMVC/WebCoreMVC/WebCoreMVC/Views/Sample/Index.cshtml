@@ -1,0 +1,16 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>Время из Index: <b>@DateTime.Now.ToString("HH:mm:ss")</b></p>
+<cache expires-after="@TimeSpan.FromMinutes(15)" vary-by-route="id">
+    @await Html.PartialAsync("TimeView")
+</cache>
+
+<summary>
+    <timer></timer>
+    <date></date>
+</summary>
