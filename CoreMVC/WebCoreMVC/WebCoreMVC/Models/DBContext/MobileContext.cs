@@ -17,6 +17,7 @@ namespace WebCoreMVC.Models.DBContext
         public MobileContext(DbContextOptions<MobileContext> options)
             : base(options)
         {
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
     }
