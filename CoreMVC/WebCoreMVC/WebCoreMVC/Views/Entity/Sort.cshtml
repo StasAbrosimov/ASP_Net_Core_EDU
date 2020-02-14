@@ -1,0 +1,63 @@
+﻿@using WebCoreMVC.Models
+@using WebCoreMVC.Models.DBModels
+
+@model SortViewModel
+<!--импортируем tag-хелперы проекта-->
+@addTagHelper *, SortApp
+
+@{
+    ViewData["Title"] = "Список пользователей";
+}
+<style>
+    @@font-face {
+        font-family: 'FontAwesome';
+        src: url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2') format('woff2'), url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/fonts/fontawesome-webfont.woff') format('woff'), url('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/fonts/fontawesome-webfont.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal
+    }
+
+    .glyphicon {
+        display: inline-block;
+        font: normal normal normal 14px/1 FontAwesome;
+        font-size: inherit;
+        text-rendering: auto;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale
+    }
+
+    .glyphicon-chevron-down:before {
+        content: "\f078";
+    }
+
+    .glyphicon-chevron-up:before {
+        content: "\f077";
+    }
+</style>
+<h1>Список пользователей</h1>
+<table class="table">
+    <tr>
+        <th>
+            <sort-header action="Sort" up="@Model.SortUsersModel.Up"
+                         current="@Model.SortUsersModel.Current" property="@Model.SortUsersModel.NameSort">
+                Имя
+            </sort-header>
+        </th>
+        <th>
+            <sort-header action="Sort" up="@Model.SortUsersModel.Up"
+                         current="@Model.SortUsersModel.Current" property="@Model.SortUsersModel.AgeSort">
+                Возраст
+            </sort-header>
+        </th>
+        <th>
+            <sort-header action="Sort" up="@Model.SortUsersModel.Up"
+                         current="@Model.SortUsersModel.Current" property="@Model.SortUsersModel.CompanySort">
+                Компания
+            </sort-header>
+        </th>
+    </tr>
+    @*@foreach (User u in Model.Users)
+    {
+        <tr><td>@u.Name</td><td>@u.Age</td><td>@u.Company.Name</td></tr>
+    }*@
+</table>
+<page-link page-model="Model.PageViewModel" page-action="Sort"></page-link>

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebCoreMVC.Models;
 using WebCoreMVC.Models.DBContext;
 using WebCoreMVC.Models.DBModels;
 
@@ -97,6 +98,35 @@ namespace WebCoreMVC.Controllers
                 }
             }
             return NotFound();
+        }
+
+        public async Task<IActionResult> Sort(SortState sortOrder = SortState.NameAsc, int page = 1)
+        {
+            //int pageSize = 2;
+            //IQueryable<User> users = db.Users.Include(x => x.Company);
+
+            //users = sortOrder switch
+            //{
+            //    SortState.NameDesc => users.OrderByDescending(s => s.Name),
+            //    SortState.AgeAsc => users.OrderBy(s => s.Age),
+            //    SortState.AgeDesc => users.OrderByDescending(s => s.Age),
+            //    SortState.CompanyAsc => users.OrderBy(s => s.Company.Name),
+            //    SortState.CompanyDesc => users.OrderByDescending(s => s.Company.Name),
+            //    _ => users.OrderBy(s => s.Name),
+            //};
+
+            //var count = await users.CountAsync();
+            //var items = await users.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            //PageViewModel pageVM = new PageViewModel(count, page, pageSize);
+
+            SortViewModel viewModel = new SortViewModel();
+            //{
+            //    Users = items,
+            //    SortUsersModel = new SortUsersModel(sortOrder),
+            //    PageViewModel = pageVM
+            //};
+            return View(viewModel);
         }
     }
 }

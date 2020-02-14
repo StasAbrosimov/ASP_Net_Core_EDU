@@ -1,0 +1,16 @@
+﻿@page "{id?}/{name?}/{age?}"
+@model RazorPages.Pages.IndexModel
+
+<p>Id is: <b>@Model.Id</b></p>
+
+@if (Model.IsCorrect)
+{
+    <p>Name: <b>@Model.Name</b></p>
+    <p>Age: <b>@Model.Age</b></p>
+}
+else
+{
+    <p>Переданы некорректные данные</p>
+    <p>Name: <b>@Model.Name</b></p>
+    <p>Age: <b>@Model.Age</b></p>
+}0
