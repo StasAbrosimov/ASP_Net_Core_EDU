@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewData["Title"] = "AdminPage";
+}
+
+<h1>AdminPage</h1>
+@using System.Security.Claims
+@foreach (var claim in User.Claims.ToList())
+{
+    <p>@claim.Type : @claim.Value</p>
+}
+<div>Город: @User.FindFirst(x => x.Type == ClaimTypes.Locality).Value</div>
+<div>Компания: @User.FindFirst(x => x.Type == "company").Value</div>

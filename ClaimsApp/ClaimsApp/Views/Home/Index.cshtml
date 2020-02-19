@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@using System.Security.Claims
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+
+@foreach (var claim in User.Claims.ToList())
+{
+    <p>@claim.Type : @claim.Value</p>
+}
+@if (User.Claims != null && User.Claims.Count() > 0)
+{
+    <div>Город: @User.FindFirst(x => x.Type == ClaimTypes.Locality).Value</div>
+    <div>Компания: @User.FindFirst(x => x.Type == "company").Value</div>
+}

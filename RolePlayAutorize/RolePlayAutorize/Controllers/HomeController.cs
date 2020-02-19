@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using AuthenticationAuthorizationSample.Models;
-using Microsoft.AspNetCore.Authorization;
+using RolePlayAutorize.Models;
 
-namespace AuthenticationAuthorizationSample.Controllers
+namespace RolePlayAutorize.Controllers
 {
-    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,23 +20,30 @@ namespace AuthenticationAuthorizationSample.Controllers
             _logger = logger;
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "admin, user")]
         public IActionResult Index()
         {
+            this.AddRoleToVB();
             return View();
         }
 
+        [Authorize(Roles = "admin")]
         public IActionResult Privacy()
         {
-            ViewBag.UserName = User.Identity.Name;
+            this.AddRoleToVB();
             return View();
         }
 
-        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        private void AddRoleToVB()
+        {
+            string role = User.FindFirst(x => x.Type == ClaimsIdentity.DefaultRoleClaimType).Value;
+            ViewBag.YourRole = role;
         }
     }
 }
