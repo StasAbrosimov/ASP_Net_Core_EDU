@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using WebBlog.Models;
 
 namespace WebBlog.Controllers
 {
@@ -16,6 +17,18 @@ namespace WebBlog.Controllers
         public IActionResult Post()
         {
             return View();
+        }
+
+        [HttpGet]
+        public IActionResult Edit()
+        {
+            return View(new Post());
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Post post)
+        {
+            return RedirectToAction("Index");
         }
     }
 }
